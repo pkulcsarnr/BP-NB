@@ -12,6 +12,16 @@ words = list()
 #NLTK´S stopwords + mine
 stopWords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours","ers", "yourself", "yourselves", "he","isnt","cant" "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "wasnt", "were", "be", "been", "being", "have", "havent", "has", "had", "having", "do", "does", "doesnt", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
 
+class Regs: 
+    specialChars = '' 
+    digits = '' 
+    singleChars = ''
+    multipleWhiteSpaces = ''
+    stopWords = list()
+regexes = Regs()
+
+
+
 #FUNCTION
 #MAIN
 ##################################################################################################
@@ -90,6 +100,7 @@ def loadData(category):
 #6. remove numbers
 ####################################################################################################
 def processData():
+    preCompileRegexes()
     #load data for sports
     sportsData = loadData("sports")
     if len(sportsData["posts"]) > 0 :
@@ -188,22 +199,31 @@ def processData():
     print(phi0z)
     print(phi1z)
 
+def preCompileRegexes():
+    regexes.specialChars = re.compile('[^\w\s]')
+    regexes.digits = re.compile('\d')
+    regexes.singleChars = re.compile('\s.\s')
+    regexes.multipleWhiteSpaces = re.compile('[ ]{2,}')
+    for sw in stopWords:
+        exp = '\\b' + sw + '+\W'
+        regexes.stopWords.append(re.compile(exp))
+
+
 def preprocessText(text):
     text = text.lower()
     #new lines
     text = text.replace('\n', ' ')
     #special characters
-    text = re.sub('[^\w\s]', '', text)
+    text = re.sub(regexes.specialChars, '', text)
     #digits
-    text = re.sub('\d', '', text)
+    text = re.sub(regexes.digits, '', text)
     #stopwords
-    for sw in stopWords:
-        exp = '\\b' + sw + '+\W'
-        text = re.sub(exp , '', text)
+    for sw in regexes.stopWords:
+        text = re.sub(sw , '', text)
     #single characters (ex donald j trump => donald trump)
-    text = re.sub('\s.\s', ' ', text)
+    text = re.sub(regexes.singleChars, ' ', text)
     #multiple white spaces
-    text = re.sub('[ ]{2,}', ' ', text)
+    text = re.sub(regexes.multipleWhiteSpaces, ' ', text)
     return(text)
 
 
